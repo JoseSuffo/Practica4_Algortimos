@@ -13,4 +13,6 @@ module com.example.practica4_algoritmos {
 
     opens com.example.practica4_algoritmos to javafx.fxml;
     exports com.example.practica4_algoritmos;
+    exports Interfaz;
+    opens Interfaz to javafx.fxml;
 }

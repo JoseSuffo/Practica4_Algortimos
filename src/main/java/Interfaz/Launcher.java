@@ -1,5 +1,6 @@
-package com.example.practica4_algoritmos;
+package Interfaz;
 
+import com.example.practica4_algoritmos.HelloApplication;
 import javafx.application.Application;
 
 public class Launcher {
