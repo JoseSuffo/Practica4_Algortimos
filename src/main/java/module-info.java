@@ -10,9 +10,9 @@ module com.example.practica4_algoritmos {
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
     requires com.almasb.fxgl.all;
+    requires javafx.graphics;
+    requires javafx.base;
 
-    opens com.example.practica4_algoritmos to javafx.fxml;
-    exports com.example.practica4_algoritmos;
     exports Interfaz;
     opens Interfaz to javafx.fxml;
 }
