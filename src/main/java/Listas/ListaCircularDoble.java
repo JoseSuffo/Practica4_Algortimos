@@ -92,4 +92,8 @@ public class ListaCircularDoble <T>{
         }
         return datos;
     }
+
+    public boolean estaVacia(){
+        return inicio == null;
+    }
 }
