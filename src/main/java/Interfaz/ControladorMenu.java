@@ -29,7 +29,7 @@ public class ControladorMenu {
         Stage stage = new Stage();
         stage.setScene(juego);
         stage.setResizable(false);
-        stage.setTitle("Solitario Guasavito");
+        stage.setTitle("Eight Off: Guasave Definitive Edition");
         stage.show();
 
         //Se cierra la ventana actual del menú

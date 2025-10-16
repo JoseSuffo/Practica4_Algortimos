@@ -1,10 +1,24 @@
 package Interfaz;
 
+import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 public class ControladorTablero {
 
     BorderPane ventana;
+
+    VBox seccionIzquierda = new VBox(10);
+    VBox seccionDerecha = new VBox(10);
+    HBox seccionInferior = new HBox(10);
+    HBox seccionSuperior = new HBox(10);
+    TableroCentralGUI tablero = new TableroCentralGUI();
+
+    Button undo = new Button("Undo");
+    Button salir = new Button("Salir");
+    Button reiniciar = new Button("Reiniciar");
+    Button pista = new  Button("Pista");
 
     public ControladorTablero(BorderPane ventana) {
         this.ventana = ventana;
