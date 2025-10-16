@@ -195,13 +195,13 @@ public class ControladorTablero {
         ventana.setCenter(tablero.getHBox());
 
         for(int i=0; i<8; i++){
-            final int index = i+1;
             var tableu = tablero.getPane(i);
+            int finalI = i;
             tableu.setOnMouseClicked(event -> {
                 if(event.getButton() != MouseButton.PRIMARY){
                     return;
                 }
-                seleccionarColumna(index);
+                seleccionarColumna(finalI);
             });
             tableu.setCursor(Cursor.HAND);
         }
@@ -217,7 +217,7 @@ public class ControladorTablero {
         StackPane[] tableaus = tablero.dibujar(eightOffGame.getTableaus());
 
         for (int i = 0; i < tableaus.length; i++) {
-            final int index = i + 1;
+            final int index=i;
             StackPane carta = tableaus[i];
             if (carta == null) {
                 continue;
@@ -253,9 +253,11 @@ public class ControladorTablero {
     }
 
     public void crearEmptyCells() {
+        seccionSuperior.getChildren().clear();
         for (int i = 0; i < emptyCells.length; i++) {
             StackPane celda = new StackPane();
             generarEspacioTablero(celda, "FreeCell " + (i + 1));
+            celda.getChildren().removeIf(n -> n.getUserData() != null);
             CartaInglesa carta = eightOffGame.getEmptyCell(i);
             if (carta != null) {
                 CartaGUI cartaGUI = new CartaGUI(carta);
@@ -266,7 +268,7 @@ public class ControladorTablero {
             int finalI = i;
             celda.setOnMouseClicked(event -> {
                 if (event.getButton() == MouseButton.PRIMARY) {
-                    seleccionarEmptyCell(finalI + 1);
+                    seleccionarEmptyCell(finalI);
                     event.consume();
                 }
             });
@@ -296,19 +298,19 @@ public class ControladorTablero {
     }
 
     public void seleccionarColumna(int index){
-        if(seleccionActual==null){
-            seleccionActual = new Seleccion(Seleccion.Tipo.TABLEAU, index-1);
-        }else{
+        if(seleccionActual == null){
+            seleccionActual = new Seleccion(Seleccion.Tipo.TABLEAU, index);
+        } else {
             HistorialTablero estadoPrevio = new HistorialTablero(eightOffGame);
             boolean seMovioCarta = false;
-            if(seleccionActual.getTipo() == Seleccion.Tipo.EMPTY_CELL){
-                seMovioCarta = eightOffGame.moveEmptyCellToTableau(seleccionActual.getIndice(), index-1);
-            }else if(seleccionActual.getTipo() == Seleccion.Tipo.TABLEAU){
-                seMovioCarta = eightOffGame.moveTableauToTableau(seleccionActual.getIndice()+1, index);
-            }else{
-                reiniciarSeleccion();
+            switch (seleccionActual.getTipo()) {
+                case EMPTY_CELL -> seMovioCarta = eightOffGame.moveEmptyCellToTableau(seleccionActual.getIndice(), index);
+                case TABLEAU -> seMovioCarta = eightOffGame.moveTableauToTableau(seleccionActual.getIndice(), index);
             }
-            if(seMovioCarta) {
+            reiniciarSeleccion();
+            if (!seMovioCarta) {
+                seleccionActual = new Seleccion(Seleccion.Tipo.TABLEAU, index);
+            } else {
                 historial.push(estadoPrevio);
                 actualizarGUI();
                 verificarFinDeJuego();
@@ -318,23 +320,23 @@ public class ControladorTablero {
 
     public void seleccionarEmptyCell(int index) {
         if (seleccionActual == null) {
-            seleccionActual = new Seleccion(Seleccion.Tipo.EMPTY_CELL, index - 1);
+            seleccionActual = new Seleccion(Seleccion.Tipo.EMPTY_CELL, index);
         } else {
             HistorialTablero estadoPrevio = new HistorialTablero(eightOffGame);
             boolean seMovio = false;
-
-            if (seleccionActual.getTipo() == Seleccion.Tipo.TABLEAU) {
-                seMovio = eightOffGame.moveTableauToEmptyCell(index - 1, seleccionActual.getIndice());
+            switch (seleccionActual.getTipo()) {
+                case EMPTY_CELL -> seMovio = eightOffGame.moveEmptyCellToTableau(seleccionActual.getIndice(), index);
+                case TABLEAU -> seMovio = eightOffGame.moveTableauToEmptyCell(index, seleccionActual.getIndice());
             }
-
-            seleccionActual = null;
-            if (seMovio) {
+            reiniciarSeleccion();
+            if (!seMovio) {
+                seleccionActual = new Seleccion(Seleccion.Tipo.EMPTY_CELL, index);
+            } else {
                 historial.push(estadoPrevio);
                 actualizarGUI();
                 verificarFinDeJuego();
             }
         }
-
     }
 
     public void reiniciarSeleccion(){

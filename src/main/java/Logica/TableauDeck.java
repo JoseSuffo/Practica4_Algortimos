@@ -182,20 +182,19 @@ public class TableauDeck {
      * @return true si puede ser la siguiente, false si no
      */
     public boolean sePuedeAgregarCarta(CartaInglesa cartaInicialDePrueba) {
-        boolean resultado = false;
         if (!cartas.isEmpty()) {
             CartaInglesa ultima = cartas.getLast();
-            if (!ultima.getColor().equals(cartaInicialDePrueba.getColor())) {
+            if (ultima.getPalo() == cartaInicialDePrueba.getPalo()) {
                 if (ultima.getValor() == cartaInicialDePrueba.getValor() + 1) {
-                    resultado = true;
+                    return true;
                 }
             }
         } else {
             if (cartaInicialDePrueba.getValor() == 13) {
-                resultado = true;
+                return true;
             }
         }
-        return resultado;
+        return false;
     }
 
     //Metodo que retorna las cartas del tableau guardadas en un ArrayList

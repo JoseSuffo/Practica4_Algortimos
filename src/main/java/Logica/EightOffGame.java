@@ -8,8 +8,8 @@ import java.util.ArrayList;
 
 public class EightOffGame {
     ArrayList<TableauDeck> tableaus = new ArrayList<>();
-    ArrayList<EmptyCell> emptyCells = new ArrayList<>();
-    ArrayList<FoundationDeck> foundations = new ArrayList<>();
+    public ArrayList<EmptyCell> emptyCells = new ArrayList<>();
+    public ArrayList<FoundationDeck> foundations = new ArrayList<>();
     FoundationDeck ultimoFoundationActualizado;
     Cartas.Mazo mazo = new Cartas.Mazo();
 
@@ -59,17 +59,17 @@ public class EightOffGame {
 
     public boolean moveTableauToTableau(int tableauFuente, int tableauDestino) {
         boolean movimientoRealizado = false;
-        TableauDeck fuente = tableaus.get(tableauFuente - 1);
+        TableauDeck fuente = tableaus.get(tableauFuente);
         if (!fuente.isEmpty()) {
-            TableauDeck destino = tableaus.get(tableauDestino - 1);
+            TableauDeck destino = tableaus.get(tableauDestino);
 
             int valorQueDebeTenerLaCartaInicialDeLaFuente;
             CartaInglesa cartaUltimaDelDestino;
             if (!destino.isEmpty()) {
                 cartaUltimaDelDestino = destino.verUltimaCarta();
-                valorQueDebeTenerLaCartaInicialDeLaFuente = cartaUltimaDelDestino.getValor() - 1;
+                valorQueDebeTenerLaCartaInicialDeLaFuente = cartaUltimaDelDestino.getValor()-1;
             } else {
-                valorQueDebeTenerLaCartaInicialDeLaFuente = 13;
+                valorQueDebeTenerLaCartaInicialDeLaFuente=13;
             }
             CartaInglesa cartaInicialDePrueba = fuente.viewCardStartingAt(valorQueDebeTenerLaCartaInicialDeLaFuente);
             if (cartaInicialDePrueba != null && destino.sePuedeAgregarCarta(cartaInicialDePrueba)) {
@@ -86,6 +86,7 @@ public class EightOffGame {
     }
 
     public boolean moveEmptyCellToTableau(int indexEmptyCell, int indexTableau) {
+        if (indexEmptyCell < 0 || indexEmptyCell >= emptyCells.size()) return false;
         EmptyCell cell = emptyCells.get(indexEmptyCell);
         if (cell.estaVacia()) return false;
 
@@ -98,13 +99,12 @@ public class EightOffGame {
         return false;
     }
 
-
     public boolean moveTableauToEmptyCell(int indexEmptyCell, int indexTableu) {
         if (indexEmptyCell < 0 || indexEmptyCell >= emptyCells.size()) return false;
         EmptyCell celda = emptyCells.get(indexEmptyCell);
         if (!celda.estaVacia()) return false;
 
-        TableauDeck fuente = tableaus.get(indexTableu - 1);
+        TableauDeck fuente = tableaus.get(indexTableu);
         if (fuente.isEmpty()) return false;
 
         CartaInglesa carta = fuente.removerUltimaCarta();
@@ -120,7 +120,7 @@ public class EightOffGame {
     }
 
     public boolean moveTableauToFoundation(int indexTableau) {
-        TableauDeck fuente = tableaus.get(indexTableau - 1);
+        TableauDeck fuente = tableaus.get(indexTableau);
         if (fuente.isEmpty()) return false;
         CartaInglesa carta = fuente.verUltimaCarta();
         if (moveCartaToFoundation(carta)) {
@@ -150,7 +150,83 @@ public class EightOffGame {
         return false;
     }
 
-    public void restaurarEstado(HistorialTablero estadoAnterior) {
+    public void restaurarEstado(HistorialTablero estado) {
+        tableaus.clear();
+        for (ArrayList<CartaInglesa> columna : estado.getTableaus()) {
+            TableauDeck nuevo = new TableauDeck();
+            ArrayList<CartaInglesa> cartasClonadas = new ArrayList<>();
+            for (CartaInglesa carta : columna) {
+                cartasClonadas.add(carta.clonar());
+            }
+            nuevo.setCards(cartasClonadas);
+            tableaus.add(nuevo);
+        }
 
+        foundations.clear();
+        for (int i = 0; i < estado.getFoundations().size(); i++) {
+            FoundationDeck nuevo = new FoundationDeck(Palo.values()[i]);
+            ArrayList<CartaInglesa> cartasClonadas = new ArrayList<>();
+            for (CartaInglesa carta : estado.getFoundations().get(i)) {
+                cartasClonadas.add(carta.clonar());
+            }
+            nuevo.setCartas(cartasClonadas);
+            foundations.add(nuevo);
+        }
+
+        emptyCells.clear();
+        for (int i = 0; i < estado.getEmptyCells().size(); i++) {
+            EmptyCell nuevo = new EmptyCell();
+            ArrayList<CartaInglesa> clonadas = estado.getEmptyCells().get(i);
+            if (!clonadas.isEmpty() && clonadas.get(0) != null) {
+                nuevo.setCartaSiVacia(clonadas.get(0));
+            }
+            emptyCells.add(nuevo);
+        }
+    }
+
+    public boolean hayMovimientosPosibles() {
+        for (int i = 0; i < tableaus.size(); i++) {
+            TableauDeck tabla = tableaus.get(i);
+
+            if (!tabla.isEmpty()) {
+                CartaInglesa ultimaCarta = tabla.verUltimaCarta();
+                for (FoundationDeck f : foundations){
+                    if (f.sePuedeAgregarCarta(ultimaCarta)){
+                        return true;
+                    }
+                }
+                for (int j = 0; j < tableaus.size(); j++){
+                    if (i == j) continue;
+                    TableauDeck destino = tableaus.get(j);
+                    if (!tabla.isEmpty() && destino.sePuedeAgregarCarta(tabla.verUltimaCarta())) {
+                        return true;
+                    }
+                }
+                for (EmptyCell c : emptyCells) {
+                    if (c.estaVacia()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        for (EmptyCell c : emptyCells) {
+            if (!c.estaVacia()) {
+                CartaInglesa carta = c.getCarta();
+                for (FoundationDeck f : foundations){
+                    if (f.sePuedeAgregarCarta(carta)) return true;
+                }
+                for (TableauDeck t : tableaus){
+                    if (t.sePuedeAgregarCarta(carta)) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public String verificarFinDeJuego(){
+        String condicion = "";
+        if(!hayMovimientosPosibles()){
+
+        }
     }
 }
