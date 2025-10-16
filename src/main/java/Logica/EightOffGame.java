@@ -5,6 +5,7 @@ import Cartas.Palo;
 import Interfaz.HistorialTablero;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class EightOffGame {
     ArrayList<TableauDeck> tableaus = new ArrayList<>();
@@ -187,35 +188,29 @@ public class EightOffGame {
     public boolean hayMovimientosPosibles() {
         for (int i = 0; i < tableaus.size(); i++) {
             TableauDeck tabla = tableaus.get(i);
-
             if (!tabla.isEmpty()) {
                 CartaInglesa ultimaCarta = tabla.verUltimaCarta();
-                for (FoundationDeck f : foundations){
-                    if (f.sePuedeAgregarCarta(ultimaCarta)){
-                        return true;
-                    }
+                for (FoundationDeck f : foundations) {
+                    if (f.sePuedeAgregarCarta(ultimaCarta)) return true;
                 }
-                for (int j = 0; j < tableaus.size(); j++){
+                for (int j = 0; j < tableaus.size(); j++) {
                     if (i == j) continue;
-                    TableauDeck destino = tableaus.get(j);
-                    if (!tabla.isEmpty() && destino.sePuedeAgregarCarta(tabla.verUltimaCarta())) {
-                        return true;
-                    }
+                    if (tableaus.get(j).sePuedeAgregarCarta(ultimaCarta)) return true;
                 }
                 for (EmptyCell c : emptyCells) {
-                    if (c.estaVacia()) {
-                        return true;
-                    }
+                    if (c.estaVacia()) return true;
                 }
             }
         }
         for (EmptyCell c : emptyCells) {
             if (!c.estaVacia()) {
                 CartaInglesa carta = c.getCarta();
-                for (FoundationDeck f : foundations){
+
+                for (FoundationDeck f : foundations) {
                     if (f.sePuedeAgregarCarta(carta)) return true;
                 }
-                for (TableauDeck t : tableaus){
+
+                for (TableauDeck t : tableaus) {
                     if (t.sePuedeAgregarCarta(carta)) return true;
                 }
             }
@@ -250,5 +245,57 @@ public class EightOffGame {
         return condicion;
     }
 
-    public
+    public Pista obtenerUnaPista() {
+        ArrayList<Pista> pistasFoundation = new ArrayList<>();
+        ArrayList<Pista> pistasTableau = new ArrayList<>();
+        ArrayList<Pista> pistasEmptyCell = new ArrayList<>();
+
+        for (int i = 0; i < tableaus.size(); i++) {
+            TableauDeck fuente = tableaus.get(i);
+            if (!fuente.isEmpty()) {
+                CartaInglesa ultimaCarta = fuente.verUltimaCarta();
+                for (int j = 0; j < foundations.size(); j++) {
+                    if (foundations.get(j).sePuedeAgregarCarta(ultimaCarta)) {
+                        pistasFoundation.add(new Pista(ultimaCarta, Pista.TipoDestino.FOUNDATION, j));
+                    }
+                }
+                for (int j = 0; j < tableaus.size(); j++) {
+                    if (i == j) continue;
+                    if (tableaus.get(j).sePuedeAgregarCarta(ultimaCarta)) {
+                        pistasTableau.add(new Pista(ultimaCarta, Pista.TipoDestino.TABLEAU, j));
+                    }
+                }
+                for (int j = 0; j < emptyCells.size(); j++) {
+                    if (emptyCells.get(j).estaVacia()) {
+                        pistasEmptyCell.add(new Pista(ultimaCarta, Pista.TipoDestino.EMPTY_CELL, j));
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < emptyCells.size(); i++) {
+            EmptyCell c = emptyCells.get(i);
+            if (!c.estaVacia()) {
+                CartaInglesa carta = c.getCarta();
+
+                for (int j = 0; j < foundations.size(); j++) {
+                    if (foundations.get(j).sePuedeAgregarCarta(carta)) {
+                        pistasFoundation.add(new Pista(carta, Pista.TipoDestino.FOUNDATION, j));
+                    }
+                }
+
+                for (int j = 0; j < tableaus.size(); j++) {
+                    if (tableaus.get(j).sePuedeAgregarCarta(carta)) {
+                        pistasTableau.add(new Pista(carta, Pista.TipoDestino.TABLEAU, j));
+                    }
+                }
+            }
+        }
+
+        Random r = new Random();
+        if (!pistasFoundation.isEmpty()) return pistasFoundation.get(r.nextInt(pistasFoundation.size()));
+        if (!pistasTableau.isEmpty()) return pistasTableau.get(r.nextInt(pistasTableau.size()));
+        if (!pistasEmptyCell.isEmpty()) return pistasEmptyCell.get(r.nextInt(pistasEmptyCell.size()));
+
+        return null;
+    }
 }

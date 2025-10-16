@@ -45,4 +45,12 @@ public class TableroCentralGUI {
     public HBox getHBox() {
         return tablero;
     }
+
+    public StackPane[] getAllTableauPanes() {
+        StackPane[] panes = new StackPane[tableaus.length];
+        for (int i = 0; i < tableaus.length; i++) {
+            panes[i] = tableaus[i].obtenerTableu();
+        }
+        return panes;
+    }
 }

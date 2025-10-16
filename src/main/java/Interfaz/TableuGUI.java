@@ -9,7 +9,7 @@ import javafx.scene.layout.StackPane;
 import java.util.ArrayList;
 
 public class TableuGUI {
-    public Pane tableu = new Pane();
+    public StackPane tableu = new StackPane();
     public double anchoCarta, altoCarta;
 
     //Constructor de la clase TableuGUI
@@ -36,7 +36,7 @@ public class TableuGUI {
             CartaGUI cartaGUI = new CartaGUI(carta);
             StackPane cartaPane = cartaGUI.getPane();
             cartaPane.setTranslateY(y);
-            cartaPane.setUserData("carta");
+            cartaPane.setUserData(carta);
             stackCartas.getChildren().add(cartaPane);
             y += carta.isFaceup() ? 25 : 30;
         }
@@ -46,7 +46,7 @@ public class TableuGUI {
     }
 
     //Este metodo nos regresa un solo tableu en su versión de Pane
-    public Pane obtenerTableu(){
+    public StackPane obtenerTableu(){
         return tableu;
     }
 }

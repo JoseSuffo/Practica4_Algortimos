@@ -4,7 +4,10 @@ import Cartas.CartaGUI;
 import Cartas.CartaInglesa;
 import Cartas.Palo;
 import Logica.EightOffGame;
+import Logica.Pista;
 import Pila.Pila;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
@@ -22,6 +25,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 public class ControladorTablero {
@@ -94,7 +98,10 @@ public class ControladorTablero {
                 "-fx-background-color: linear-gradient(to bottom, #90CAF9, #1976D2);"));
 
         pista.setOnAction(E -> {
-
+            Pista pistaObj = eightOffGame.obtenerUnaPista();
+            if (pistaObj != null) {
+                resaltarCarta(pistaObj.carta);
+            }
         });
         pista.setTextFill(Color.WHITE);
         pista.setStyle("-fx-background-color: linear-gradient(to bottom, #90CAF9, #1976D2);");
@@ -370,6 +377,42 @@ public class ControladorTablero {
                 break;
             case "CONTINUA":
                 break;
+        }
+    }
+
+    public void resaltarCarta(CartaInglesa cartaDePista) {
+        StackPane[] tableaus = tablero.getAllTableauPanes();
+        StackPane[] todos = new StackPane[tableaus.length + emptyCells.length];
+        System.arraycopy(tableaus, 0, todos, 0, tableaus.length);
+        System.arraycopy(emptyCells, 0, todos, tableaus.length, emptyCells.length);
+
+        for (StackPane celda : todos) {
+            for (Node n : celda.getChildren()) {
+                if (n instanceof StackPane stackCartas) {
+                    for (Node cartaNode : stackCartas.getChildren()) {
+                        for (Node child : ((StackPane)cartaNode).getChildren()) {
+                            if (child instanceof Rectangle && ((Rectangle)child).getStroke() == Color.YELLOW) {
+                                ((StackPane)cartaNode).getChildren().remove(child);
+                                break;
+                            }
+                        }
+                        if (cartaNode.getUserData() == cartaDePista) {
+                            Rectangle borde = new Rectangle(50, 100);
+                            borde.setFill(Color.TRANSPARENT);
+                            borde.setStroke(Color.YELLOW);
+                            borde.setStrokeWidth(3);
+                            ((StackPane) cartaNode).getChildren().add(borde);
+                            Timeline timeline = new Timeline(
+                                    new KeyFrame(javafx.util.Duration.seconds(1),
+                                            e -> ((StackPane) cartaNode).getChildren().remove(borde))
+                            );
+                            timeline.setCycleCount(1);
+                            timeline.play();
+                            return;
+                        }
+                    }
+                }
+            }
         }
     }
 }
