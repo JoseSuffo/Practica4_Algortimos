@@ -344,6 +344,32 @@ public class ControladorTablero {
     }
 
     public void verificarFinDeJuego(){
-
+        String condicionPartida = eightOffGame.verificarFinDeJuego();
+        switch (condicionPartida) {
+            case "DERROTA":
+                Alert derrota = new  Alert(Alert.AlertType.INFORMATION);
+                derrota.setTitle("Fin del Juego");
+                derrota.setHeaderText("¡¡HAS PERDIDO!!");
+                derrota.setContentText("Te has quedado sin movimientos posibles, comenzará un juego nuevo");
+                derrota.showAndWait();
+                eightOffGame = new EightOffGame();
+                reiniciarSeleccion();
+                actualizarGUI();
+                historial.clear();
+                break;
+            case "VICTORIA":
+                Alert ganador = new  Alert(Alert.AlertType.INFORMATION);
+                ganador.setTitle("Fin del Juego");
+                ganador.setHeaderText("¡¡HAS GANADO!!");
+                ganador.setContentText("El juego ha terminado, comenzará uno nuevo");
+                ganador.showAndWait();
+                eightOffGame = new EightOffGame();
+                reiniciarSeleccion();
+                actualizarGUI();
+                historial.clear();
+                break;
+            case "CONTINUA":
+                break;
+        }
     }
 }

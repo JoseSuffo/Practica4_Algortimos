@@ -223,10 +223,32 @@ public class EightOffGame {
         return false;
     }
 
+    public boolean foundationsLlenos(){
+        boolean foundationsLlenos = true;
+        for (FoundationDeck foundation : foundations) {
+            if (foundation.estaVacio()) {
+                foundationsLlenos = false;
+            } else {
+                CartaInglesa ultimaCarta = foundation.getUltimaCarta();
+                if (ultimaCarta.getValor() != 13) {
+                    foundationsLlenos = false;
+                }
+            }
+        }
+        return foundationsLlenos;
+    }
+
     public String verificarFinDeJuego(){
         String condicion = "";
         if(!hayMovimientosPosibles()){
-
+            condicion="DERROTA";
+        }else if(foundationsLlenos()){
+            condicion="VICTORIA";
+        }else{
+            condicion="CONTINUA";
         }
+        return condicion;
     }
+
+    public
 }
