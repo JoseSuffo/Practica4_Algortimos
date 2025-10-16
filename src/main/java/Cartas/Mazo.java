@@ -36,4 +36,12 @@ public class Mazo {
             cartas.insertaFin(cartasTemporales.get(i));
         }
     }
+
+    public ArrayList<CartaInglesa> tomarNCartas(int N){
+        ArrayList<CartaInglesa> cartasTomadas = new ArrayList<>();
+        for(int i=0; i<N; i++){
+            cartasTomadas.add(cartas.eliminaInicio());
+        }
+        return cartasTomadas;
+    }
 }

@@ -96,4 +96,19 @@ public class ListaCircularDoble <T>{
     public boolean estaVacia(){
         return inicio == null;
     }
+
+    public int getSize() {
+        if (inicio == null) return 0;
+
+        int size = 1;
+        NodoDoble<T> actual = inicio.getSiguiente();
+
+        while (actual != null && actual != inicio) {
+            size++;
+            actual = actual.getSiguiente();
+        }
+
+        return size;
+    }
+
 }

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public class TableroCentralGUI {
     public HBox tablero = new HBox(16);
-    public TableuGUI[] tableaus = new TableuGUI[7];
+    public TableuGUI[] tableaus = new TableuGUI[8];
 
     //Constructor de la clase TableroCentralGUI
     public TableroCentralGUI() {
@@ -33,8 +33,8 @@ public class TableroCentralGUI {
 
     //Metodo que dibuja todos los tableus en GUI y los regresa como un ArrayList de StackPane
     public StackPane[] dibujar(ArrayList<TableauDeck> tableau){
-        StackPane[] pane = new StackPane[7];
-        for(int i = 0; i < 7 && i < tableau.size(); i++){
+        StackPane[] pane = new StackPane[8];
+        for(int i = 0; i < 8 && i < tableau.size(); i++){
             var cartas = tableau.get(i);
             pane[i] = tableaus[i].getTableu(cartas.getCards());
         }
