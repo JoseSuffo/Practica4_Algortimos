@@ -21,6 +21,7 @@ public class Mazo {
         for (int i = 2; i <=14 ; i++) {
             for (Palo palo : Palo.values()) {
                 CartaInglesa c = new CartaInglesa(i,palo, palo.getColor());
+                c.makeFaceUp();
                 cartas.insertaFin(c);
             }
         }
@@ -43,5 +44,9 @@ public class Mazo {
             cartasTomadas.add(cartas.eliminaInicio());
         }
         return cartasTomadas;
+    }
+
+    public CartaInglesa tomarUnaCarta(){
+        return cartas.eliminaInicio();
     }
 }

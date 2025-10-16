@@ -92,4 +92,16 @@ public class FoundationDeck {
     public void setCartas(ArrayList<CartaInglesa> cartas) {
         this.cartas = new ArrayList<>(cartas);
     }
+
+    public boolean sePuedeAgregarCarta(CartaInglesa carta) {
+        if (!carta.tieneElMismoPalo(palo)) return false;
+
+        if (cartas.isEmpty()) {
+            return carta.getValorBajo() == 1; // As
+        } else {
+            CartaInglesa ultima = cartas.getLast();
+            return carta.getValorBajo() == ultima.getValorBajo() + 1;
+        }
+    }
+
 }

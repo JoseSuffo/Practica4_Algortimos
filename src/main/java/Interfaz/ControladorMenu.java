@@ -25,7 +25,7 @@ public class ControladorMenu {
         ControladorTablero controlador = new ControladorTablero(ventana);
 
         //Se crea la escena del tablero y se muestra
-        Scene juego = new Scene(ventana, 800, 600);
+        Scene juego = new Scene(ventana, 800, 800);
         Stage stage = new Stage();
         stage.setScene(juego);
         stage.setResizable(false);

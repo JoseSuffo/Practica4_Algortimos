@@ -74,7 +74,7 @@ public class TableauDeck {
                 if (i == cartas.size() - 1 || (
                         cartas.get(i + 1).isFaceup() &&
                                 cartas.get(i + 1).getValor() == carta.getValor() - 1 &&
-                                !cartas.get(i + 1).getColor().equals(carta.getColor())
+                                cartas.get(i + 1).getPalo() == carta.getPalo()
                 )) {
                     return carta;
                 }

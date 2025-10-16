@@ -26,7 +26,12 @@ public class CartaGUI {
 
     //Se actualiza la imagen en base a una ruta qe se recibe.
     public void actualizarImagen() {
-        imagenCarta.setImage(new Image(obtenerRuta()));
+        String ruta = obtenerRuta();
+        var recurso = getClass().getResource(ruta);
+        if (recurso == null) {
+            throw new IllegalArgumentException("Imagen no encontrada: " + ruta);
+        }
+        imagenCarta.setImage(new Image(recurso.toExternalForm()));
     }
 
     public String obtenerRuta() {
