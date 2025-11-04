@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class Mazo {
+    //Creación del mazo con una lista circular doble
     private ListaCircularDoble<CartaInglesa> cartas = new  ListaCircularDoble<>();
 
     public Mazo(){
@@ -22,7 +23,7 @@ public class Mazo {
             for (Palo palo : Palo.values()) {
                 CartaInglesa c = new CartaInglesa(i,palo, palo.getColor());
                 c.makeFaceUp();
-                cartas.insertaFin(c);
+                cartas.insertaFin(c); //Método de la clase ListaCircularDoble
             }
         }
     }
@@ -34,7 +35,7 @@ public class Mazo {
         }
         Collections.shuffle(cartasTemporales);
         for (int i = cartasTemporales.size() - 1; i >= 0; i--) {
-            cartas.insertaFin(cartasTemporales.get(i));
+            cartas.insertaFin(cartasTemporales.get(i)); //Método de la clase ListaCircularDoble
         }
     }
 

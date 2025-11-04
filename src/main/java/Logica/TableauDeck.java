@@ -31,35 +31,31 @@ public class TableauDeck {
      * @param value of starting card to remove
      * @return removed cards or empty ArrayList if it is not possible to remove.
      */
-    public ArrayList<CartaInglesa> removeStartingAt(int value) {
+    /**
+     * Obtiene un bloque de cartas consecutivas descendentes del mismo palo
+     * desde la última carta hacia arriba (bloque movible).
+     *
+     * @return bloque de cartas válidas o lista vacía si no hay secuencia.
+     */
+    public ArrayList<CartaInglesa> obtenerBloqueMovible() {
         ArrayList<CartaInglesa> bloque = new ArrayList<>();
-        int inicio = -1;
-        for (int i = 0; i < cartas.size(); i++) {
-            CartaInglesa carta = cartas.get(i);
-            if (carta.isFaceup() && carta.getValor() == value) {
-                inicio = i;
-                break;
-            }
-        }
-        if (inicio == -1) return bloque;
-        bloque.add(cartas.get(inicio));
-        for (int i = inicio + 1; i < cartas.size(); i++) {
-            CartaInglesa anterior = bloque.getLast();
-            CartaInglesa actual = cartas.get(i);
 
-            if (!actual.isFaceup()) break;
-            if (actual.getValor() == anterior.getValor() - 1 &&
-                    !actual.getColor().equals(anterior.getColor())) {
-                bloque.add(actual);
+        if (cartas.isEmpty()) return bloque;
+
+        bloque.add(cartas.getLast());
+
+        // Recorremos hacia arriba verificando secuencia válida (descendente y mismo palo)
+        for (int i = cartas.size() - 2; i >= 0; i--) {
+            CartaInglesa actual = cartas.get(i);
+            CartaInglesa siguiente = bloque.getFirst();
+
+            if (actual.isFaceup() &&
+                    actual.getPalo() == siguiente.getPalo() &&
+                    actual.getValor() == siguiente.getValor() + 1) {
+
+                bloque.add(0, actual); // añadir al inicio
             } else {
                 break;
-            }
-        }
-
-        if (!bloque.isEmpty()) {
-            cartas.subList(inicio, inicio + bloque.size()).clear();
-            if (!cartas.isEmpty()) {
-                cartas.getLast().makeFaceUp();
             }
         }
 
@@ -175,26 +171,15 @@ public class TableauDeck {
         return cartas.isEmpty();
     }
 
-    /**
-     * Verifica si la carta que recibe puede ser la siguiente del tableau actual.
-     *
-     * @param cartaInicialDePrueba
-     * @return true si puede ser la siguiente, false si no
-     */
-    public boolean sePuedeAgregarCarta(CartaInglesa cartaInicialDePrueba) {
-        if (!cartas.isEmpty()) {
-            CartaInglesa ultima = cartas.getLast();
-            if (ultima.getPalo() == cartaInicialDePrueba.getPalo()) {
-                if (ultima.getValor() == cartaInicialDePrueba.getValor() + 1) {
-                    return true;
-                }
-            }
-        } else {
-            if (cartaInicialDePrueba.getValor() == 13) {
-                return true;
-            }
+    public boolean sePuedeAgregarCarta(CartaInglesa carta) {
+        if (cartas.isEmpty()) {
+            // Solo se puede colocar un Rey en una columna vacía
+            return carta.getValor() == 13;
         }
-        return false;
+
+        CartaInglesa ultima = cartas.getLast();
+        return (ultima.getPalo() == carta.getPalo() &&
+                ultima.getValor() == carta.getValor() + 1);
     }
 
     //Metodo que retorna las cartas del tableau guardadas en un ArrayList
@@ -206,5 +191,16 @@ public class TableauDeck {
     public void setCards(ArrayList<CartaInglesa> cards) {
         cartas = new ArrayList<>();
         cartas.addAll(cards);
+    }
+
+    public ArrayList<CartaInglesa> getCartas() {
+        return cartas;
+    }
+
+    public void removerBloque(ArrayList<CartaInglesa> bloque) {
+        cartas.removeAll(bloque);
+        if (!cartas.isEmpty()) {
+            cartas.getLast().makeFaceUp();
+        }
     }
 }

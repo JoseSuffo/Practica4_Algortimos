@@ -24,13 +24,13 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
-
-import java.util.Arrays;
 import java.util.Optional;
 
 public class ControladorTablero {
+    //Instancia de la clase EightOffGame para manejar la lógica
     EightOffGame eightOffGame;
 
+    //Atributos para la creación de la interfaz
     BorderPane ventana;
     VBox seccionIzquierda = new VBox(10);
     VBox seccionDerecha = new VBox(10);
@@ -44,11 +44,15 @@ public class ControladorTablero {
     Button reiniciar = new Button("Reiniciar");
     Button pista = new  Button("Pista");
 
+    //Atributos de la clase ControladorTablero
     Seleccion seleccionActual;
     StackPane cartaSeleccionada;
+    String condicionPartida;
 
+    //Creación del historial de movimientos mediante una pila
     Pila<HistorialTablero> historial = new Pila<HistorialTablero>(1000);
 
+    //Constructor de la clase ControladorTablero
     public ControladorTablero(BorderPane ventana) {
         seleccionActual = null;
         cartaSeleccionada = new StackPane();
@@ -56,8 +60,10 @@ public class ControladorTablero {
         this.ventana = ventana;
         crearGUI();
         actualizarGUI();
+        condicionPartida="CONTINUA";
     }
 
+    //Método que crea la interfaz y agrega todos los elementos gráfica a la misma, utilizando unn diseño
     public void crearGUI(){
         ventana.setStyle("-fx-background-color: linear-gradient(from 0% 50% to 100% 50%, rgba(12,89,2,1) 0%, rgba(31,148,80,1) 50%, rgba(12,89,2,1) 100%);");
 
@@ -214,12 +220,14 @@ public class ControladorTablero {
         }
     }
 
+    //Método que actualiza la GUI y recarga los elementos de la misma
     public void actualizarGUI(){
         crearTablero();
         crearFoundations();
         crearEmptyCells();
     }
 
+    //Método que crea el tablero central de manera gráfica
     public void crearTablero(){
         StackPane[] tableaus = tablero.dibujar(eightOffGame.getTableaus());
 
@@ -241,6 +249,7 @@ public class ControladorTablero {
         }
     }
 
+    //Método que crea las foundations de manera gráfica
     public void crearFoundations() {
         for (int i = 0; i < foundations.length; i++) {
             StackPane carta = foundations[i];
@@ -253,12 +262,13 @@ public class ControladorTablero {
             if (cartaInglesa != null) {
                 CartaGUI cardGUI = new CartaGUI(cartaInglesa);
                 StackPane card = cardGUI.getPane();
-                card.setUserData("carta");
+                card.setUserData(cartaInglesa);
                 carta.getChildren().add(card);
             }
         }
     }
 
+    //Método que crea las empty cells de manera gráfica
     public void crearEmptyCells() {
         seccionSuperior.getChildren().clear();
         for (int i = 0; i < emptyCells.length; i++) {
@@ -284,7 +294,7 @@ public class ControladorTablero {
         }
     }
 
-
+    //Método que genera un espacio en el tablero para agregar una carta
     public void generarEspacioTablero(StackPane tableu, String nombre){
         tableu.setPrefSize(50,100);
         Rectangle rectangle = new Rectangle(50,100);
@@ -304,6 +314,7 @@ public class ControladorTablero {
         tableu.setCursor(Cursor.HAND);
     }
 
+    //Método que selecciona una columna (tableau) mediante el indíce de la misma
     public void seleccionarColumna(int index){
         if(seleccionActual == null){
             seleccionActual = new Seleccion(Seleccion.Tipo.TABLEAU, index);
@@ -325,6 +336,7 @@ public class ControladorTablero {
         }
     }
 
+    //Método que selecciona una celda vacía (empty cell) mediante el índice de la misma
     public void seleccionarEmptyCell(int index) {
         if (seleccionActual == null) {
             seleccionActual = new Seleccion(Seleccion.Tipo.EMPTY_CELL, index);
@@ -346,12 +358,14 @@ public class ControladorTablero {
         }
     }
 
+    //Método que reinicia la selección actua en la interfaz
     public void reiniciarSeleccion(){
         seleccionActual=null;
     }
 
+    //Método que verifica si el juego ya termino en victoria o derrota o si debe de continuar
     public void verificarFinDeJuego(){
-        String condicionPartida = eightOffGame.verificarFinDeJuego();
+        condicionPartida = eightOffGame.verificarFinDeJuego();
         switch (condicionPartida) {
             case "DERROTA":
                 Alert derrota = new  Alert(Alert.AlertType.INFORMATION);
@@ -380,7 +394,10 @@ public class ControladorTablero {
         }
     }
 
+    //Método que resalta una carta recibida mediante la pista
     public void resaltarCarta(CartaInglesa cartaDePista) {
+        if (cartaDePista == null) return;
+
         StackPane[] tableaus = tablero.getAllTableauPanes();
         StackPane[] todos = new StackPane[tableaus.length + emptyCells.length];
         System.arraycopy(tableaus, 0, todos, 0, tableaus.length);
@@ -390,25 +407,22 @@ public class ControladorTablero {
             for (Node n : celda.getChildren()) {
                 if (n instanceof StackPane stackCartas) {
                     for (Node cartaNode : stackCartas.getChildren()) {
-                        for (Node child : ((StackPane)cartaNode).getChildren()) {
-                            if (child instanceof Rectangle && ((Rectangle)child).getStroke() == Color.YELLOW) {
-                                ((StackPane)cartaNode).getChildren().remove(child);
-                                break;
+                        if (cartaNode instanceof StackPane cartaPane) {
+                            Object userData = cartaPane.getUserData();
+                            if (userData != null && userData.equals(cartaDePista)) {
+                                Rectangle borde = new Rectangle(50, 100);
+                                borde.setFill(Color.TRANSPARENT);
+                                borde.setStroke(Color.YELLOW);
+                                borde.setStrokeWidth(3);
+                                cartaPane.getChildren().add(borde);
+                                Timeline timeline = new Timeline(
+                                        new KeyFrame(javafx.util.Duration.seconds(1),
+                                                e -> cartaPane.getChildren().remove(borde))
+                                );
+                                timeline.setCycleCount(1);
+                                timeline.play();
+                                return;
                             }
-                        }
-                        if (cartaNode.getUserData() == cartaDePista) {
-                            Rectangle borde = new Rectangle(50, 100);
-                            borde.setFill(Color.TRANSPARENT);
-                            borde.setStroke(Color.YELLOW);
-                            borde.setStrokeWidth(3);
-                            ((StackPane) cartaNode).getChildren().add(borde);
-                            Timeline timeline = new Timeline(
-                                    new KeyFrame(javafx.util.Duration.seconds(1),
-                                            e -> ((StackPane) cartaNode).getChildren().remove(borde))
-                            );
-                            timeline.setCycleCount(1);
-                            timeline.play();
-                            return;
                         }
                     }
                 }
