@@ -5,6 +5,7 @@ import Cartas.Palo;
 import Interfaz.HistorialTablero;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 public class EightOffGame {
@@ -20,6 +21,41 @@ public class EightOffGame {
         createTableaux();
         createFoundations();
         createEmptyCells();
+    }
+
+    public EightOffGame(HistorialTablero estado) {
+        tableaus = new ArrayList<>();
+        foundations = new ArrayList<>();
+        emptyCells = new ArrayList<>();
+
+        for (ArrayList<CartaInglesa> columna : estado.getTableaus()) {
+            TableauDeck nuevo = new TableauDeck();
+            ArrayList<CartaInglesa> cartasClonadas = new ArrayList<>();
+            for (CartaInglesa carta : columna) {
+                cartasClonadas.add(carta.clonar());
+            }
+            nuevo.setCards(cartasClonadas);
+            tableaus.add(nuevo);
+        }
+
+        for (int i = 0; i < estado.getFoundations().size(); i++) {
+            FoundationDeck nuevo = new FoundationDeck(Palo.values()[i]);
+            ArrayList<CartaInglesa> cartasClonadas = new ArrayList<>();
+            for (CartaInglesa carta : estado.getFoundations().get(i)) {
+                cartasClonadas.add(carta.clonar());
+            }
+            nuevo.setCartas(cartasClonadas);
+            foundations.add(nuevo);
+        }
+
+        for (int i = 0; i < estado.getEmptyCells().size(); i++) {
+            EmptyCell nuevo = new EmptyCell();
+            ArrayList<CartaInglesa> clonadas = estado.getEmptyCells().get(i);
+            if (!clonadas.isEmpty() && clonadas.get(0) != null) {
+                nuevo.setCartaSiVacia(clonadas.get(0).clonar());
+            }
+            emptyCells.add(nuevo);
+        }
     }
 
     //Creación de los 8 tableaus que se utilizan en el juego.
@@ -316,5 +352,21 @@ public class EightOffGame {
         if (!pistasEmptyCell.isEmpty()) return pistasEmptyCell.get(r.nextInt(pistasEmptyCell.size()));
 
         return null;
+    }
+
+    public CartaInglesa[] getEmptyCells() {
+        CartaInglesa[] arr = new CartaInglesa[emptyCells.size()];
+        for (int i = 0; i < emptyCells.size(); i++) {
+            arr[i] = emptyCells.get(i).getCarta();
+        }
+        return arr;
+    }
+
+    public FoundationDeck[] getFoundations() {
+        FoundationDeck[] arr = new FoundationDeck[foundations.size()];
+        for (int i = 0; i < foundations.size(); i++) {
+            arr[i] = foundations.get(i);
+        }
+        return arr;
     }
 }

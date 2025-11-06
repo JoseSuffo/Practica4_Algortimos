@@ -12,17 +12,16 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.util.Optional;
 
@@ -36,6 +35,7 @@ public class ControladorTablero {
     VBox seccionDerecha = new VBox(10);
     HBox seccionInferior = new HBox(10);
     HBox seccionSuperior = new HBox(10);
+    HBox visorHistorial = new HBox(20);
     StackPane[] foundations = new StackPane[4];
     StackPane[] emptyCells = new StackPane[8];
     TableroCentralGUI tablero = new TableroCentralGUI();
@@ -50,6 +50,17 @@ public class ControladorTablero {
     Seleccion seleccionActual;
     StackPane cartaSeleccionada;
     String condicionPartida;
+
+    private int indiceHistorial = -1;
+    private EightOffGame vistaTemporal;
+    private TableroCentralGUI tableroHistorial = new TableroCentralGUI();
+    private BorderPane panelHistorial = new BorderPane();
+    private HBox barraHistorial = new HBox(15);
+    private Button btnPrev = new Button("<<");
+    private Button btnNext = new Button(">>");
+    private Button btnAplicar = new Button("Aplicar estado");
+    private Button btnCerrar = new Button("Cerrar visor");
+    private Stage ventanaHistorial;
 
     //Creación del historial de movimientos mediante una pila
     HistorialAdaptador historial = new HistorialAdaptador();
@@ -85,6 +96,9 @@ public class ControladorTablero {
         seccionSuperior.setPadding(new Insets(16));
         seccionSuperior.setAlignment(Pos.CENTER);
         seccionSuperior.setFillHeight(false);
+
+        visorHistorial.setStyle("-fx-background-color: rgba(0,0,0,0.3);");
+        visorHistorial.setPadding(new Insets(20));
 
         undo.setOnAction(E -> {
             if(historial.puedeDeshacer()){
@@ -126,9 +140,7 @@ public class ControladorTablero {
         redo.setOnMouseExited(e -> redo.setStyle(
                 "-fx-background-color: linear-gradient(to bottom, #90CAF9, #1976D2);"));
 
-        modoHistorial.setOnAction(E -> {
-
-        });
+        modoHistorial.setOnAction(e -> abrirVisorHistorial());
         modoHistorial.setTextFill(Color.WHITE);
         modoHistorial.setStyle("-fx-background-color: linear-gradient(to bottom, #90CAF9, #1976D2);");
         modoHistorial.setOnMouseEntered(e -> modoHistorial.setStyle(
@@ -237,7 +249,7 @@ public class ControladorTablero {
             });
         }
 
-        seccionIzquierda.getChildren().addAll(undo, redo, pista);
+        seccionIzquierda.getChildren().addAll(undo, redo, pista, modoHistorial);
         seccionDerecha.getChildren().addAll(foundations[0], foundations[1]
                 , foundations[2], foundations[3]);
         seccionInferior.getChildren().addAll(salir, reiniciar);
@@ -471,5 +483,109 @@ public class ControladorTablero {
                 }
             }
         }
+    }
+
+    public void abrirVisorHistorial() {
+        if (historial.pilaVacia()) {
+            Alert a = new Alert(Alert.AlertType.WARNING, "No hay historial disponible");
+            a.showAndWait();
+            return;
+        }
+
+        seleccionActual = null;
+        indiceHistorial = historial.getIndiceActual();
+        vistaTemporal = new EightOffGame(historial.obtenerEstado(indiceHistorial));
+
+        BorderPane root = new BorderPane();
+        root.setPadding(new Insets(10));
+        root.setStyle(
+                "-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #fff8dc, #ffd700, #daa520, #b8860b);" +
+                        "-fx-border-color: gold;" +
+                        "-fx-border-width: 3;" +
+                        "-fx-effect: dropshadow(gaussian, goldenrod, 10, 0.3, 0, 2);"
+        );
+
+        BorderPane tableroMini = tableroHistorial.dibujarMiniCompleto(
+                vistaTemporal.getTableaus(),
+                vistaTemporal.getEmptyCells(),
+                vistaTemporal.getFoundations()
+        );
+        tableroMini.setMouseTransparent(true);
+        tableroMini.setPrefSize(750, 700);
+        tableroMini.setMaxSize(750, 700);
+        root.setTop(tableroMini);
+
+        btnPrev.setOnAction(ev -> moverHistorialVentana(-1));
+        btnNext.setOnAction(ev -> moverHistorialVentana(1));
+        btnAplicar.setOnAction(ev -> aplicarEstadoHistorialVentana());
+        btnCerrar.setOnAction(ev -> ventanaHistorial.close());
+
+        barraHistorial = new HBox(20);
+        barraHistorial.setAlignment(Pos.CENTER);
+        barraHistorial.setPadding(new Insets(10));
+        barraHistorial.getChildren().addAll(btnPrev, btnNext, btnAplicar, btnCerrar);
+
+        root.setBottom(barraHistorial);
+
+        ventanaHistorial = new Stage();
+        ventanaHistorial.setTitle("Historial de Movimientos");
+        ventanaHistorial.initModality(Modality.APPLICATION_MODAL);
+        ventanaHistorial.setResizable(true);
+
+        Scene escena = new Scene(root, 800, 900);
+        ventanaHistorial.setScene(escena);
+        ventanaHistorial.show();
+    }
+
+    private void moverHistorialVentana(int direccion) {
+        int nuevo = indiceHistorial + direccion;
+        if (!historial.existeIndice(nuevo)) return;
+        indiceHistorial = nuevo;
+        vistaTemporal = new EightOffGame(historial.obtenerEstado(indiceHistorial));
+        actualizarVistaHistorialVentana();
+    }
+
+    private void actualizarVistaHistorialVentana() {
+        BorderPane vistaMini = tableroHistorial.dibujarMiniCompleto(
+                vistaTemporal.getTableaus(),
+                vistaTemporal.getEmptyCells(),
+                vistaTemporal.getFoundations()
+        );
+        vistaMini.setMouseTransparent(true);
+        vistaMini.setPrefSize(750, 700);
+        vistaMini.setMaxSize(750, 700);
+        BorderPane root = (BorderPane) ventanaHistorial.getScene().getRoot();
+        root.setTop(vistaMini);
+    }
+
+    private void aplicarEstadoHistorialVentana() {
+        HistorialTablero estadoElegido = historial.obtenerEstado(indiceHistorial);
+        eightOffGame.restaurarEstado(estadoElegido);
+        historial.truncarDesde(indiceHistorial);
+        actualizarGUI();
+        ventanaHistorial.close();
+    }
+
+    private void moverHistorial(int direccion) {
+        int nuevo = indiceHistorial + direccion;
+        if (!historial.existeIndice(nuevo)) return;
+        indiceHistorial = nuevo;
+        vistaTemporal = new EightOffGame(historial.obtenerEstado(indiceHistorial));
+        actualizarVistaHistorial();
+    }
+
+    private void actualizarVistaHistorial() {
+        StackPane vistaMini = tableroHistorial.dibujarMini(vistaTemporal.getTableaus());
+        vistaMini.setMouseTransparent(true);
+        vistaMini.setMaxWidth(300);
+        vistaMini.setMaxHeight(200);
+
+        VBox centro = (VBox) panelHistorial.getCenter();
+        centro.getChildren().set(0, vistaMini);
+    }
+
+
+    private void cerrarVisor() {
+        ventana.setCenter(tablero.getHBox());
     }
 }

@@ -1,11 +1,12 @@
 package Interfaz;
 
+import Cartas.CartaGUI;
+import Cartas.CartaInglesa;
+import Logica.FoundationDeck;
 import Logica.TableauDeck;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
 
 import java.util.ArrayList;
 
@@ -52,5 +53,68 @@ public class TableroCentralGUI {
             panes[i] = tableaus[i].obtenerTableu();
         }
         return panes;
+    }
+
+    public StackPane dibujarMini(ArrayList<TableauDeck> tableaus) {
+        StackPane root = new StackPane();
+        HBox h = new HBox(10);
+        h.setAlignment(Pos.CENTER);
+
+        StackPane[] columnas = dibujar(tableaus);
+        for (StackPane c : columnas) {
+            c.setOnMouseClicked(null);
+            c.setCursor(null);
+        }
+
+        h.getChildren().addAll(columnas);
+        root.getChildren().add(h);
+
+        return root;
+    }
+
+    public BorderPane dibujarMiniCompleto(
+            ArrayList<TableauDeck> tableaus,
+            CartaInglesa[] emptyCells,
+            FoundationDeck[] foundations
+    ) {
+        BorderPane mini = new BorderPane();
+
+        HBox filaEmpty = new HBox(5);
+        for (int i = 0; i < emptyCells.length; i++) {
+            StackPane celda = new StackPane();
+            celda.setPrefSize(40, 60);
+            celda.setStyle("-fx-border-color: black; -fx-background-color: rgba(255,255,255,0.5);");
+
+            if (emptyCells[i] != null) {
+                CartaGUI carta = new CartaGUI(emptyCells[i]);
+                StackPane cartaPane = carta.getPane();
+                celda.getChildren().add(cartaPane);
+            }
+
+            filaEmpty.getChildren().add(celda);
+        }
+        mini.setTop(filaEmpty);
+
+        VBox columnaFound = new VBox(5);
+        for (int i = 0; i < foundations.length; i++) {
+            StackPane celda = new StackPane();
+            celda.setPrefSize(40, 60);
+            celda.setStyle("-fx-border-color: black; -fx-background-color: rgba(255,255,255,0.5);");
+
+            CartaInglesa ultima = foundations[i].getUltimaCarta();
+            if (ultima != null) {
+                CartaGUI carta = new CartaGUI(ultima);
+                StackPane cartaPane = carta.getPane();
+                celda.getChildren().add(cartaPane);
+            }
+
+            columnaFound.getChildren().add(celda);
+        }
+        mini.setRight(columnaFound);
+
+        StackPane centro = dibujarMini(tableaus);
+        mini.setCenter(centro);
+
+        return mini;
     }
 }

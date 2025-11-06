@@ -27,5 +27,21 @@ public class HistorialAdaptador {
     }
 
     public boolean puedeDeshacer() { return lista.puedeDeshacer(); }
-    public void truncarDesdeActual() { lista.truncarDesdeActual(); }
+
+
+    public int getIndiceActual() {
+        return lista.indiceActual();
+    }
+
+    public boolean existeIndice(int i) {
+        return lista.existeIndice(i);
+    }
+
+    public HistorialTablero obtenerEstado(int i) {
+        return lista.obtenerPorIndice(i);
+    }
+
+    public void truncarDesde(int i) {
+        lista.truncarDesde(i);
+    }
 }

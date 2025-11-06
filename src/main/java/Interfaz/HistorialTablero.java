@@ -52,7 +52,12 @@ public class HistorialTablero {
         ArrayList<ArrayList<CartaInglesa>> copia = new ArrayList<>();
         for (EmptyCell cell : originales) {
             ArrayList<CartaInglesa> clonadas = new ArrayList<>();
-            clonadas.add(cell.getCarta());
+            CartaInglesa carta = cell.getCarta();
+            if (carta != null) {
+                clonadas.add(carta.clonar());
+            } else {
+                clonadas.add(null);
+            }
             copia.add(clonadas);
         }
         return copia;
