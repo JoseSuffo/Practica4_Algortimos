@@ -43,6 +43,8 @@ public class ControladorTablero {
     Button salir = new Button("Salir");
     Button reiniciar = new Button("Reiniciar");
     Button pista = new  Button("Pista");
+    Button redo = new Button("Redo");
+    Button modoHistorial = new  Button("Modo Historial");
 
     //Atributos de la clase ControladorTablero
     Seleccion seleccionActual;
@@ -50,7 +52,7 @@ public class ControladorTablero {
     String condicionPartida;
 
     //Creación del historial de movimientos mediante una pila
-    Pila<HistorialTablero> historial = new Pila<HistorialTablero>(1000);
+    HistorialAdaptador historial = new HistorialAdaptador();
 
     //Constructor de la clase ControladorTablero
     public ControladorTablero(BorderPane ventana) {
@@ -61,6 +63,7 @@ public class ControladorTablero {
         crearGUI();
         actualizarGUI();
         condicionPartida="CONTINUA";
+        historial.push(new HistorialTablero(eightOffGame));
     }
 
     //Método que crea la interfaz y agrega todos los elementos gráfica a la misma, utilizando unn diseño
@@ -84,7 +87,7 @@ public class ControladorTablero {
         seccionSuperior.setFillHeight(false);
 
         undo.setOnAction(E -> {
-            if(!historial.pilaVacia()){
+            if(historial.puedeDeshacer()){
                 HistorialTablero estadoAnterior = historial.pop();
                 eightOffGame.restaurarEstado(estadoAnterior);
                 actualizarGUI();
@@ -102,6 +105,43 @@ public class ControladorTablero {
                 "-fx-background-color: linear-gradient(to bottom, #1976D2, #90CAF9);"));
         undo.setOnMouseExited(e -> undo.setStyle(
                 "-fx-background-color: linear-gradient(to bottom, #90CAF9, #1976D2);"));
+
+        redo.setOnAction(E -> {
+            if (historial.puedeRehacer()) {
+                HistorialTablero siguienteEstado = historial.rehacer();
+                eightOffGame.restaurarEstado(siguienteEstado);
+                actualizarGUI();
+            } else {
+                Alert sinRedo = new Alert(Alert.AlertType.WARNING);
+                sinRedo.setTitle("Advertencia de Redo");
+                sinRedo.setHeaderText("No hay movimientos para rehacer");
+                sinRedo.setContentText("No existen movimientos posteriores al actual.");
+                sinRedo.showAndWait();
+            }
+        });
+        redo.setTextFill(Color.WHITE);
+        redo.setStyle("-fx-background-color: linear-gradient(to bottom, #90CAF9, #1976D2);");
+        redo.setOnMouseEntered(e -> redo.setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #1976D2, #90CAF9);"));
+        redo.setOnMouseExited(e -> redo.setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #90CAF9, #1976D2);"));
+
+        modoHistorial.setOnAction(E -> {
+
+        });
+        modoHistorial.setTextFill(Color.WHITE);
+        modoHistorial.setStyle("-fx-background-color: linear-gradient(to bottom, #90CAF9, #1976D2);");
+        modoHistorial.setOnMouseEntered(e -> modoHistorial.setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #1976D2, #90CAF9);"));
+        modoHistorial.setOnMouseExited(e -> modoHistorial.setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #90CAF9, #1976D2);"));
+
+        pista.setOnAction(E -> {
+            Pista pistaObj = eightOffGame.obtenerUnaPista();
+            if (pistaObj != null) {
+                resaltarCarta(pistaObj.carta);
+            }
+        });
 
         pista.setOnAction(E -> {
             Pista pistaObj = eightOffGame.obtenerUnaPista();
@@ -150,7 +190,8 @@ public class ControladorTablero {
                 eightOffGame = new EightOffGame();
                 reiniciarSeleccion();
                 actualizarGUI();
-                historial.clear();
+                historial = new HistorialAdaptador();
+                historial.push(new HistorialTablero(eightOffGame));
             }else if(resultado.get() == ButtonType.CANCEL){
                 Alert mensaje = new Alert(Alert.AlertType.INFORMATION);
                 mensaje.setTitle("El juego sigue");
@@ -189,17 +230,17 @@ public class ControladorTablero {
 
                 reiniciarSeleccion();
                 if (seMovioCarta) {
-                    historial.push(estadoPrevio);
+                    historial.push(new HistorialTablero(eightOffGame));
                     actualizarGUI();
                     verificarFinDeJuego();
                 }
             });
         }
 
-        seccionIzquierda.getChildren().addAll(pista);
+        seccionIzquierda.getChildren().addAll(undo, redo, pista);
         seccionDerecha.getChildren().addAll(foundations[0], foundations[1]
                 , foundations[2], foundations[3]);
-        seccionInferior.getChildren().addAll(undo, salir, reiniciar);
+        seccionInferior.getChildren().addAll(salir, reiniciar);
 
         ventana.setTop(seccionSuperior);
         ventana.setBottom(seccionInferior);
@@ -329,7 +370,7 @@ public class ControladorTablero {
             if (!seMovioCarta) {
                 seleccionActual = new Seleccion(Seleccion.Tipo.TABLEAU, index);
             } else {
-                historial.push(estadoPrevio);
+                historial.push(new HistorialTablero(eightOffGame));
                 actualizarGUI();
                 verificarFinDeJuego();
             }
@@ -351,7 +392,7 @@ public class ControladorTablero {
             if (!seMovio) {
                 seleccionActual = new Seleccion(Seleccion.Tipo.EMPTY_CELL, index);
             } else {
-                historial.push(estadoPrevio);
+                historial.push(new HistorialTablero(eightOffGame));
                 actualizarGUI();
                 verificarFinDeJuego();
             }
@@ -376,7 +417,8 @@ public class ControladorTablero {
                 eightOffGame = new EightOffGame();
                 reiniciarSeleccion();
                 actualizarGUI();
-                historial.clear();
+                historial = new HistorialAdaptador();
+                historial.push(new HistorialTablero(eightOffGame));
                 break;
             case "VICTORIA":
                 Alert ganador = new  Alert(Alert.AlertType.INFORMATION);
@@ -387,7 +429,8 @@ public class ControladorTablero {
                 eightOffGame = new EightOffGame();
                 reiniciarSeleccion();
                 actualizarGUI();
-                historial.clear();
+                historial = new HistorialAdaptador();
+                historial.push(new HistorialTablero(eightOffGame));
                 break;
             case "CONTINUA":
                 break;

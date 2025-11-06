@@ -13,10 +13,17 @@ public class ListaHistorial {
 
     public void agregar(HistorialTablero estado) {
         NodoHistorial nuevo = new NodoHistorial(estado);
+
         if (actual != null) {
-            actual.siguiente = nuevo;
+            if (actual.siguiente != null) {
+                actual.siguiente.anterior = null;
+            }
+            actual.siguiente = null;
+
             nuevo.anterior = actual;
+            actual.siguiente = nuevo;
         }
+
         actual = nuevo;
     }
 
@@ -48,6 +55,4 @@ public class ListaHistorial {
         if (actual == null) return;
         actual.siguiente = null;
     }
-
-    public NodoHistorial getNodoActual() { return actual; }
 }
